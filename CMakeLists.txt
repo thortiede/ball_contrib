@@ -90,6 +90,7 @@ EVALUATE_SELECTION()
 
 # Iterate valid packages, configure them, and add them to DOWNLOAD_ARCHIVES
 SET(DOWNLOAD_ARCHIVES "")
+LIST(APPEND BUILD_PACKAGES bison)
 FOREACH(PACKAGE_NAME ${BUILD_PACKAGES})
 
 	BALL_CONTRIB_MACRO_ext_pro_init()
