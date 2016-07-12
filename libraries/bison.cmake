@@ -39,7 +39,7 @@ CONFIGURE_FILE("${CONTRIB_LIBRARY_PATH}/install_template.cmake.in" "${CONTRIB_BI
 
 SET(PROJECT_INSTALL_COMMAND ${CMAKE_COMMAND} -P "${CONTRIB_BINARY_SRC}/bison_deps_install.cmake")
 
-BALL_CONTRIB_MACRO_ext_pro_init_add()
+BALL_CONTRIB_MACRO_ext_pro_add(bison_deps)
 
 #[[
 ExternalProject_Add("bison_deps"
@@ -63,7 +63,7 @@ CONFIGURE_FILE("${CONTRIB_LIBRARY_PATH}/install_template.cmake.in" "${CONTRIB_BI
 SET(PROJECT_DEPENDENCE bison_deps)
 SET(PROJECT_INSTALL_COMMAND ${CMAKE_COMMAND} -P "${CONTRIB_BINARY_SRC}/bison_install.cmake")
 
-BALL_CONTRIB_MACRO_ext_pro_add()
+BALL_CONTRIB_MACRO_ext_pro_add("")
 
 #[[
 ExternalProject_Add(${PACKAGE_NAME}

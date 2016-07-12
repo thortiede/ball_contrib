@@ -32,11 +32,6 @@
 # -----------------------------------------------------------------------------
 
 
-###############################################################################
-###    Macros                                                               ###
-###############################################################################
-
-
 # Initialize project configuation
 MACRO(BALL_CONTRIB_MACRO_ext_pro_init)
 
@@ -57,10 +52,12 @@ MACRO(BALL_CONTRIB_MACRO_ext_pro_add)
 
 	if(PROJECT_CMAKE_ARGS)
 		set(CONFIGURE_COMMAND CMAKE_ARGS ${PROJECT_CMAKE_ARGS})
+	elseif(PROJECT_CONFIGURE_COMMAND)
+		set(CONFIGURE_COMMAND CONFIGURE_COMMAND "${PROJECT_CONFIGURE_COMMAND}")
 	else()
-		set(CONFIGURE_COMMAND CONFIGURE_COMMAND ${PROJECT_CONFIGURE_COMMAND})
+		set(CONFIGURE_COMMAND CONFIGURE_COMMAND "")
 	endif()
-
+	message("${CONFIGURE_COMMAND}")
 	ExternalProject_Add(${PACKAGE_NAME}
 
 		DEPENDS "${PROJECT_DEPENDENCE}"
@@ -75,7 +72,7 @@ MACRO(BALL_CONTRIB_MACRO_ext_pro_add)
 		LOG_BUILD ${CUSTOM_LOG_BUILD}
 		LOG_INSTALL ${CUSTOM_LOG_INSTALL}
 
-		${CONFIGURE_COMMAND}
+		"${CONFIGURE_COMMAND}"
 		#CONFIGURE_COMMAND "${PROJECT_CONFIGURE_COMMAND}"
 		BUILD_COMMAND "${PROJECT_BUILD_COMMAND}"
 		INSTALL_COMMAND "${PROJECT_INSTALL_COMMAND}"
@@ -229,10 +226,6 @@ MACRO(FETCH_PACKAGE_ARCHIVES)
 
 ENDMACRO()
 
-
-###############################################################################
-###    Messages                                                             ###
-###############################################################################
 
 MACRO(MSG_HELP)
 	MESSAGE(STATUS "")

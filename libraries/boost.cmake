@@ -73,7 +73,7 @@ ELSE()
 	SET(PROJECT_BUILD_COMMAND ./b2 install "${BOOST_B2_OPTIONS}" "${BOOST_LIBRARIES}")
 ENDIF()
 
-BALL_CONTRIB_MACRO_ext_pro_add()
+BALL_CONTRIB_MACRO_ext_pro_add("")
 
 # Extract bzip2 and zlib archives
 ExternalProject_Add_Step(${PACKAGE_NAME} extract_bzip2_zlib
