@@ -31,8 +31,7 @@
 # $Authors: Philipp Thiel $
 # -----------------------------------------------------------------------------
 
-MSG_CONFIGURE_PACKAGE_BEGIN("${PACKAGE_NAME}")
-
+#[[
 ExternalProject_Add("${PACKAGE_NAME}"
 
 	URL "${CONTRIB_ARCHIVES_URL}/${${PACKAGE_NAME}_archive}"
@@ -47,5 +46,9 @@ ExternalProject_Add("${PACKAGE_NAME}"
 
 	CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CONTRIB_INSTALL_BASE}
 )
+]]
 
-MSG_CONFIGURE_PACKAGE_END("${PACKAGE_NAME}")
+SET(PROJECT_CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CONTRIB_INSTALL_BASE})
+
+BALL_CONTRIB_MACRO_ext_pro_add()
+BALL_CONTRIB_MACRO_ext_pro_finalize("")

@@ -36,6 +36,67 @@
 ###    Macros                                                               ###
 ###############################################################################
 
+
+# Initialize project configuation
+MACRO(BALL_CONTRIB_MACRO_ext_pro_init)
+
+	MSG_CONFIGURE_PACKAGE_BEGIN(${PACKAGE_NAME})
+
+	SET(PROJECT_BUILD_IN_SOURCE 1)
+	SET(PROJECT_DEPENDENCE "")
+	SET(PROJECT_CMAKE_ARGS "")
+	SET(PROJECT_CONFIGURE_COMMAND "")
+	SET(PROJECT_BUILD_COMMAND "")
+	SET(PROJECT_INSTALL_COMMAND "")
+
+ENDMACRO()
+
+
+# Add external project
+MACRO(BALL_CONTRIB_MACRO_ext_pro_add)
+
+	if(PROJECT_CMAKE_ARGS)
+		set(CONFIGURE_COMMAND CMAKE_ARGS ${PROJECT_CMAKE_ARGS})
+	else()
+		set(CONFIGURE_COMMAND CONFIGURE_COMMAND ${PROJECT_CONFIGURE_COMMAND})
+	endif()
+
+	ExternalProject_Add(${PACKAGE_NAME}
+
+		DEPENDS "${PROJECT_DEPENDENCE}"
+
+		URL "${CONTRIB_ARCHIVES_PATH}/${${PACKAGE_NAME}_archive}"
+		PREFIX ${PROJECT_BINARY_DIR}
+		BUILD_IN_SOURCE ${PROJECT_BUILD_IN_SOURCE}
+
+		LOG_DOWNLOAD ${CUSTOM_LOG_DOWNLOAD}
+		LOG_UPDATE ${CUSTOM_LOG_UPDATE}
+		LOG_CONFIGURE ${CUSTOM_LOG_CONFIGURE}
+		LOG_BUILD ${CUSTOM_LOG_BUILD}
+		LOG_INSTALL ${CUSTOM_LOG_INSTALL}
+
+		${CONFIGURE_COMMAND}
+		#CONFIGURE_COMMAND "${PROJECT_CONFIGURE_COMMAND}"
+		BUILD_COMMAND "${PROJECT_BUILD_COMMAND}"
+		INSTALL_COMMAND "${PROJECT_INSTALL_COMMAND}"
+	)
+
+ENDMACRO()
+
+
+# Finalize external project configuration
+MACRO(BALL_CONTRIB_MACRO_ext_pro_finalize LIB_PREFIX)
+
+	# On Mac OS X we have to use absolute paths as install names for dylibs
+	IF(APPLE AND NOT STREQUAL "")
+		FIX_DYLIB_INSTALL_NAMES(${LIB_PREFIX})
+	ENDIF()
+
+	MSG_CONFIGURE_PACKAGE_END("${PACKAGE_NAME}")
+
+ENDMACRO()
+
+
 # Macro to write absolute paths as install names for dylibs using install_name_tool
 MACRO(FIX_DYLIB_INSTALL_NAMES DYLIB_PREFIX)
 
@@ -51,6 +112,7 @@ MACRO(FIX_DYLIB_INSTALL_NAMES DYLIB_PREFIX)
 	)
 
 ENDMACRO()
+
 
 # Check which URL to use for archive download
 MACRO(SET_CONTRIB_ARCHIVES_URL)

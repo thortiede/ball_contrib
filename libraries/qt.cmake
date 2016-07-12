@@ -31,8 +31,6 @@
 # $Authors: Philipp Thiel $
 # -----------------------------------------------------------------------------
 
-MSG_CONFIGURE_PACKAGE_BEGIN("${PACKAGE_NAME}")
-
 # CMake option to exclude QtWebEngine from the Qt5 build
 OPTION(SKIP_QTWEBENGINE "Skip building QtWebEngine." OFF)
 
@@ -74,9 +72,8 @@ ENDIF()
 
 # Platform-specific settings
 IF(MSVC)
-	SET(QT_CONFIGURE_COMMAND configure.bat)
-	SET(QT_BUILD_COMMAND nmake)
-	SET(QT_INSTALL_COMMAND nmake install)
+	SET(PROJECT_BUILD_COMMAND nmake)
+	SET(PROJECT_INSTALL_COMMAND nmake install)
 
 	IF(MSVC_VERSION EQUAL "1800")
 		LIST(APPEND QT_CONFIGURE_OPTIONS -platform win32-msvc2013)
@@ -88,17 +85,24 @@ IF(MSVC)
 	IF("${THREADS}" GREATER "1")
 		LIST(APPEND QT_CONFIGURE_OPTIONS -mp)
 	ENDIF()
+
+	SET(PROJECT_CONFIGURE_COMMAND configure.bat ${QT_CONFIGURE_OPTIONS})
 ELSE()
-	SET(QT_CONFIGURE_COMMAND ./configure)
-	SET(QT_BUILD_COMMAND ${MAKE_COMMAND})
-	SET(QT_INSTALL_COMMAND ${MAKE_INSTALL_COMMAND})
+	SET(PROJECT_CONFIGURE_COMMAND ./configure)
+	SET(PROJECT_BUILD_COMMAND ${MAKE_COMMAND})
+	SET(PROJECT_INSTALL_COMMAND ${MAKE_INSTALL_COMMAND})
 
 	# In case of Linux OS use xcb-libraries bundled with Qt
 	IF(CMAKE_SYSTEM_NAME STREQUAL Linux)
 		LIST(APPEND QT_CONFIGURE_OPTIONS -qt-xcb)
 	ENDIF()
+
+	SET(PROJECT_CONFIGURE_COMMAND configure.bat ${QT_CONFIGURE_OPTIONS})
 ENDIF()
 
+BALL_CONTRIB_MACRO_ext_pro_add()
+
+#[[
 # Add project
 ExternalProject_Add(${PACKAGE_NAME}
 
@@ -118,5 +122,6 @@ ExternalProject_Add(${PACKAGE_NAME}
 	BUILD_COMMAND ${QT_BUILD_COMMAND}
 	INSTALL_COMMAND ${QT_INSTALL_COMMAND}
 )
+]]
 
-MSG_CONFIGURE_PACKAGE_END("${PACKAGE_NAME}")
+BALL_CONTRIB_MACRO_ext_pro_finalize("")

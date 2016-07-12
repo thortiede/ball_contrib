@@ -31,11 +31,10 @@
 # $Authors: Philipp Thiel $
 # -----------------------------------------------------------------------------
 
-MSG_CONFIGURE_PACKAGE_BEGIN("${PACKAGE_NAME}")
-
 SET(TARGET_DIR "${CONTRIB_BINARY_SRC}/${PACKAGE_NAME}")
 CONFIGURE_FILE("${CONTRIB_LIBRARY_PATH}/install_template.cmake.in" "${CONTRIB_BINARY_SRC}/flex_install.cmake" @ONLY)
 
+#[[
 ExternalProject_Add(${PACKAGE_NAME}
 
 	URL "${CONTRIB_ARCHIVES_URL}/${${PACKAGE_NAME}_archive}"
@@ -49,5 +48,9 @@ ExternalProject_Add(${PACKAGE_NAME}
 	BUILD_COMMAND ""
 	INSTALL_COMMAND "${CMAKE_COMMAND}" -P "${CONTRIB_BINARY_SRC}/flex_install.cmake"
 )
+]]
 
-MSG_CONFIGURE_PACKAGE_END("${PACKAGE_NAME}")
+SET(PROJECT_INSTALL_COMMAND ${CMAKE_COMMAND} -P "${CONTRIB_BINARY_SRC}/flex_install.cmake")
+
+BALL_CONTRIB_MACRO_ext_pro_add()
+BALL_CONTRIB_MACRO_ext_pro_finalize("")

@@ -31,8 +31,6 @@
 # $Authors: Philipp Thiel $
 # -----------------------------------------------------------------------------
 
-MSG_CONFIGURE_PACKAGE_BEGIN("${PACKAGE_NAME}")
-
 # Further packages to be downloaded
 LIST(APPEND DOWNLOAD_ARCHIVES "bzip2" "zlib")
 
@@ -68,34 +66,14 @@ SET(BOOST_B2_OPTIONS --prefix=${CONTRIB_INSTALL_BASE}
 
 # Set system dependent variables
 IF(MSVC)
-	SET(BOOST_BOOTSTRAP_CMD bootstrap.bat)
-	SET(BOOST_B2_CMD b2.exe)
+	SET(PROJECT_CONFIGURE_COMMAND bootstrap.bat)
+	SET(PROJECT_BUILD_COMMAND b2.exe install "${BOOST_B2_OPTIONS}" "${BOOST_LIBRARIES}")
 ELSE()
-	SET(BOOST_BOOTSTRAP_CMD ./bootstrap.sh)
-	SET(BOOST_B2_CMD ./b2)
+	SET(PROJECT_CONFIGURE_COMMAND ./bootstrap.sh)
+	SET(PROJECT_BUILD_COMMAND ./b2 install "${BOOST_B2_OPTIONS}" "${BOOST_LIBRARIES}")
 ENDIF()
 
-# Add project
-ExternalProject_Add(${PACKAGE_NAME}
-
-	URL "${CONTRIB_ARCHIVES_PATH}/${${PACKAGE_NAME}_archive}"
-	PREFIX ${PROJECT_BINARY_DIR}
-	BUILD_IN_SOURCE ${CUSTOM_BUILD_IN_SOURCE}
-
-	LOG_DOWNLOAD ${CUSTOM_LOG_DOWNLOAD}
-	LOG_UPDATE ${CUSTOM_LOG_UPDATE}
-	LOG_CONFIGURE ${CUSTOM_LOG_CONFIGURE}
-	LOG_BUILD ${CUSTOM_LOG_BUILD}
-	LOG_INSTALL ${CUSTOM_LOG_INSTALL}
-
-	CONFIGURE_COMMAND ${BOOST_BOOTSTRAP_CMD}
-
-	BUILD_COMMAND ${BOOST_B2_CMD} install
-		      ${BOOST_B2_OPTIONS}
-		      ${BOOST_LIBRARIES}
-
-	INSTALL_COMMAND ""
-)
+BALL_CONTRIB_MACRO_ext_pro_add()
 
 # Extract bzip2 and zlib archives
 ExternalProject_Add_Step(${PACKAGE_NAME} extract_bzip2_zlib
@@ -110,15 +88,4 @@ ExternalProject_Add_Step(${PACKAGE_NAME} extract_bzip2_zlib
 	DEPENDERS configure
 )
 
-# On Mac OS X we have to use absolute paths as install names for dylibs
-IF(APPLE)
-	FIX_DYLIB_INSTALL_NAMES(libboost)
-ENDIF()
-
-MSG_CONFIGURE_PACKAGE_END("${PACKAGE_NAME}")
-
-
-
-
-
-
+BALL_CONTRIB_MACRO_ext_pro_finalize("")

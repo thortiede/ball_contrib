@@ -31,14 +31,17 @@
 # $Authors: Philipp Thiel $
 # -----------------------------------------------------------------------------
 
-MSG_CONFIGURE_PACKAGE_BEGIN("${PACKAGE_NAME}")
-
 # Further packages to be downloaded
 LIST(APPEND DOWNLOAD_ARCHIVES "bison_deps")
 
 SET(TARGET_DIR "${CONTRIB_BINARY_SRC}/bison_deps")
 CONFIGURE_FILE("${CONTRIB_LIBRARY_PATH}/install_template.cmake.in" "${CONTRIB_BINARY_SRC}/bison_deps_install.cmake" @ONLY)
 
+SET(PROJECT_INSTALL_COMMAND ${CMAKE_COMMAND} -P "${CONTRIB_BINARY_SRC}/bison_deps_install.cmake")
+
+BALL_CONTRIB_MACRO_ext_pro_init_add()
+
+#[[
 ExternalProject_Add("bison_deps"
 
 	URL "${CONTRIB_ARCHIVES_URL}/${bison_deps_archive}"
@@ -52,11 +55,17 @@ ExternalProject_Add("bison_deps"
 	BUILD_COMMAND ""
 	INSTALL_COMMAND ${CMAKE_COMMAND} -P "${CONTRIB_BINARY_SRC}/bison_deps_install.cmake"
 )
-
+]]
 
 SET(TARGET_DIR "${CONTRIB_BINARY_SRC}/${PACKAGE_NAME}")
 CONFIGURE_FILE("${CONTRIB_LIBRARY_PATH}/install_template.cmake.in" "${CONTRIB_BINARY_SRC}/bison_install.cmake" @ONLY)
 
+SET(PROJECT_DEPENDENCE bison_deps)
+SET(PROJECT_INSTALL_COMMAND ${CMAKE_COMMAND} -P "${CONTRIB_BINARY_SRC}/bison_install.cmake")
+
+BALL_CONTRIB_MACRO_ext_pro_add()
+
+#[[
 ExternalProject_Add(${PACKAGE_NAME}
 
 	DEPENDS "bison_deps"
@@ -72,8 +81,9 @@ ExternalProject_Add(${PACKAGE_NAME}
 	BUILD_COMMAND ""
 	INSTALL_COMMAND ${CMAKE_COMMAND} -P "${CONTRIB_BINARY_SRC}/bison_install.cmake"
 )
+]]
 
-MSG_CONFIGURE_PACKAGE_END("${PACKAGE_NAME}")
+BALL_CONTRIB_MACRO_ext_pro_finalize("")
 
 
 

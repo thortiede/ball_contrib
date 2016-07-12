@@ -40,9 +40,9 @@ SET(BALL_CONTRIB_VERSION_PATCH "0")
 SET(BALL_CONTRIB_VERSION "${BALL_CONTRIB_VERSION_MAJOR}.${BALL_CONTRIB_VERSION_MINOR}.${BALL_CONTRIB_VERSION_PATCH}")
 
 
-###############################################################################
-###    CMake settings                                                       ###
-###############################################################################
+# -----------------------------------------------------------------------------
+# CMake settings
+#
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12 FATAL_ERROR)
 
@@ -56,102 +56,17 @@ INCLUDE(ExternalProject)
 # Load contrib-specific macros and messages
 INCLUDE(BALLContribMacros)
 
-
-###############################################################################
-###    Global settings                                                      ###
-###############################################################################
-
-# Binary CMake module folder
-SET(CONTRIB_CMAKE_MODULES "${PROJECT_BINARY_DIR}/cmake")
-FILE(MAKE_DIRECTORY "${CONTRIB_CMAKE_MODULES}")
-
-# Folder to store the downloaded tarballs
-SET(CONTRIB_ARCHIVES_PATH "${PROJECT_BINARY_DIR}/archives")
-FILE(MAKE_DIRECTORY "${CONTRIB_ARCHIVES_PATH}")
-
-# Install directory
-SET(CONTRIB_INSTALL_BASE "${PROJECT_BINARY_DIR}/install")
-FILE(MAKE_DIRECTORY "${CONTRIB_INSTALL_BASE}")
-
-# Install directory: binaries
-SET(CONTRIB_INSTALL_BIN "${CONTRIB_INSTALL_BASE}/bin")
-FILE(MAKE_DIRECTORY "${CONTRIB_INSTALL_BIN}")
-
-# Install directory: libraries
-SET(CONTRIB_INSTALL_LIB "${CONTRIB_INSTALL_BASE}/lib")
-FILE(MAKE_DIRECTORY "${CONTRIB_INSTALL_LIB}")
-
-# Install directory: dynamic libraries on Windows
-IF(MSVC)
-	SET(CONTRIB_INSTALL_DLL "${CONTRIB_INSTALL_BASE}/dlls")
-	FILE(MAKE_DIRECTORY "${CONTRIB_INSTALL_DLL}")
-ENDIF()
-
-# Install directory: headers
-SET(CONTRIB_INSTALL_INC "${CONTRIB_INSTALL_BASE}/include")
-FILE(MAKE_DIRECTORY "${CONTRIB_INSTALL_INC}")
-
-# Path that contains extracted sources (usually <build_dir>/src)
-SET(CONTRIB_BINARY_SRC "${PROJECT_BINARY_DIR}/src")
-FILE(MAKE_DIRECTORY "${CONTRIB_BINARY_SRC}")
-
-# Path that contains the contrib libraries
-# Directory already exists (git)
-SET(CONTRIB_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/libraries")
-
-# Optional path to directory that contains ball_contrib package tarballs.
-# Amongst others, this variable can be used to provide self-contained ball_contrib packages.
-SET(ARCHIVES_PATH "" CACHE PATH "Optional path to the folder containing the contrib archives.")
-
-# Set URL for archive download
-SET(ARCHIVES_URL "http://build-archive.informatik.uni-tuebingen.de/ball/contrib/v${BALL_CONTRIB_VERSION}/archives")
-SET(ARCHIVES_URL_FALLBACK "http://sourceforge.net/projects/ballproject/files/contrib/v${BALL_CONTRIB_VERSION}/archives")
-SET_CONTRIB_ARCHIVES_URL()
-
-# Logging options
-SET(CUSTOM_BUILD_IN_SOURCE 1 CACHE STRING  "Build projects in sources (default 1).")
-SET(CUSTOM_LOG_DOWNLOAD 1 CACHE STRING  "Write logfile for download step instead of printing (default 1).")
-SET(CUSTOM_LOG_UPDATE 1 CACHE STRING  "Write logfile for update/patch step instead of printing (default 1).")
-SET(CUSTOM_LOG_CONFIGURE 1 CACHE STRING  "Write logfile for configure step instead of printing (default 1).")
-SET(CUSTOM_LOG_BUILD 1 CACHE STRING  "Write logfile for build step instead of printing (default 1).")
-SET(CUSTOM_LOG_INSTALL 1 CACHE STRING  "Write logfile for install step instead of printing (default 1).")
-
-# Option to specify number of threads used by make
-SET(THREADS 1 CACHE STRING "Number of threads used by make steps (default 1).")
-
-# Set contrib build type
-IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
-	SET(CONTRIB_BUILD_TYPE "Debug")
-ELSEIF(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-	SET(CONTRIB_BUILD_TYPE "RelWithDebInfo")
-ELSE()
-	SET(CONTRIB_BUILD_TYPE "Release")
-ENDIF()
-
-# Determine whether this is a 32 or 64 bit build
-IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
-	SET(CONTRIB_ADDRESSMODEL 64)
-	SET(MSBUILD "msbuild" "/m:${THREADS}" "/p:Platform=x64"   "/p:Configuration=${CONTRIB_BUILD_TYPE}")
-ELSE()
-	SET(CONTRIB_ADDRESSMODEL 32)
-	SET(MSBUILD "msbuild" "/m:${THREADS}" "/p:Platform=win32" "/p:Configuration=${CONTRIB_BUILD_TYPE}")
-ENDIF()
-
-# Set appropriate build commands for non-windows systems
-IF(NOT MSVC)
-	SET(MAKE_COMMAND "make" "-j${THREADS}")
-	SET(MAKE_INSTALL_COMMAND "make" "install")
-ENDIF()
+# Load contrib-specific macros and messages
+INCLUDE(BALLContribConfig)
 
 # Check availability of Python
 INCLUDE(BALLContribPython)
 
 
-###############################################################################
-###    Select and check packages to be installed                            ###
-###############################################################################
+# -----------------------------------------------------------------------------
+# Select and check packages to be installed
+#
 
-# Get list and information of available contrib packages
 INCLUDE(BALLContribPackages)
 
 # Print help message if HELP is set
@@ -177,7 +92,10 @@ EVALUATE_SELECTION()
 SET(DOWNLOAD_ARCHIVES "")
 FOREACH(PACKAGE_NAME ${BUILD_PACKAGES})
 
+	BALL_CONTRIB_MACRO_ext_pro_init()
+
 	INCLUDE("${CONTRIB_LIBRARY_PATH}/${PACKAGE_NAME}.cmake" RESULT_VARIABLE SUCCESS)
+
 	IF(NOT ${SUCCESS} STREQUAL "NOTFOUND")
 		LIST(APPEND DOWNLOAD_ARCHIVES "${PACKAGE_NAME}")
 	ENDIF()
