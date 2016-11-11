@@ -1,46 +1,36 @@
 # -----------------------------------------------------------------------------
-#   BALL - Biochemical ALgorithms Library
-#   A C++ framework for molecular modeling and structural bioinformatics.
-# -----------------------------------------------------------------------------
+# CONTRIB FRAMEWORK
 #
-# Copyright (C) 1996-2012, the BALL Team:
-#  - Andreas Hildebrandt
-#  - Oliver Kohlbacher
-#  - Hans-Peter Lenhof
-#  - Eberhard Karls University, Tuebingen
-#  - Saarland University, Saarbrücken
-#  - others
+# Based on CMake ExternalProjects, this repository offers functionality
+# to configure, build, and install software dependencies that can be used
+# by other projects.
 #
-#  This library is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU Lesser General Public
-#  License as published by the Free Software Foundation; either
-#  version 2.1 of the License, or (at your option) any later version.
+# It has been developed in course of the open source
+# research software BALL (Biochemical ALgorithms Library).
 #
-#  This library is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#  Lesser General Public License for more details.
 #
-#  You should have received a copy of the GNU Lesser General Public
-#  License along with this library (BALL/source/LICENSE); if not, write
-#  to the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
-#  Boston, MA  02111-1307  USA
+# Copyright 2016, the BALL team (http://www.ball-project.org)
 #
-# -----------------------------------------------------------------------------
-# $Maintainer: Philipp Thiel $
-# $Authors: Philipp Thiel $
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL ANY OF THE AUTHORS OR THE CONTRIBUTING
+# INSTITUTIONS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
 # -----------------------------------------------------------------------------
 
-MSG_CONFIGURE_PACKAGE_BEGIN("${PACKAGE_NAME}")
-
-# Further packages to be downloaded
-LIST(APPEND DOWNLOAD_ARCHIVES "bzip2" "zlib")
 
 # Determine the correct b2 switches according to build type and platform
-IF(CONTRIB_BUILD_TYPE STREQUAL "RelWithDebInfo")
+IF("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
 	SET(BOOST_BUILD_TYPE "release debug-symbols=on")
 ELSE()
-	STRING(TOLOWER "${CONTRIB_BUILD_TYPE}" BOOST_BUILD_TYPE)
+	STRING(TOLOWER "${CMAKE_BUILD_TYPE}" BOOST_BUILD_TYPE)
 ENDIF()
 
 # Libraries to be build
@@ -51,13 +41,18 @@ SET(BOOST_LIBRARIES --with-chrono
 		    --with-serialization
 		    --with-system
 		    --with-thread
+		    --with-math
+		    --with-filesystem
+		    --with-graph
+		    --with-program_options
+
 )
 
 # Boost b2 options
-SET(BOOST_B2_OPTIONS --prefix=${CONTRIB_INSTALL_BASE}
+SET(BOOST_B2_OPTIONS --prefix=${CONTRIB_INSTALL_PREFIX}
 		     -j ${THREADS}
-		     -sBZIP2_SOURCE=${CONTRIB_BINARY_SRC}/${bzip2}
-		     -sZLIB_SOURCE=${CONTRIB_BINARY_SRC}/${zlib}
+		     -sBZIP2_SOURCE=${CONTRIB_BINARY_SRC}/bzip2
+		     -sZLIB_SOURCE=${CONTRIB_BINARY_SRC}/zlib
 		     address-model=${CONTRIB_ADDRESSMODEL}
 		     variant=${BOOST_BUILD_TYPE}
 		     --layout=tagged
@@ -75,11 +70,11 @@ ELSE()
 	SET(BOOST_B2_CMD ./b2)
 ENDIF()
 
-# Add project
-ExternalProject_Add(${PACKAGE_NAME}
 
-	URL "${CONTRIB_ARCHIVES_PATH}/${${PACKAGE_NAME}_archive}"
+ExternalProject_Add(${PACKAGE}
+
 	PREFIX ${PROJECT_BINARY_DIR}
+	DOWNLOAD_COMMAND ""
 	BUILD_IN_SOURCE ${CUSTOM_BUILD_IN_SOURCE}
 
 	LOG_DOWNLOAD ${CUSTOM_LOG_DOWNLOAD}
@@ -98,14 +93,14 @@ ExternalProject_Add(${PACKAGE_NAME}
 )
 
 # Extract bzip2 and zlib archives
-ExternalProject_Add_Step(${PACKAGE_NAME} extract_bzip2_zlib
+ExternalProject_Add_Step(${PACKAGE} extract_bzip2_zlib
 
 	LOG 1
 	DEPENDEES download
 
 	WORKING_DIRECTORY "${CONTRIB_BINARY_SRC}"
-	COMMAND ${CMAKE_COMMAND} -E tar xzf "${CONTRIB_ARCHIVES_PATH}/${bzip2_archive}"
-	COMMAND ${CMAKE_COMMAND} -E tar xzf "${CONTRIB_ARCHIVES_PATH}/${zlib_archive}"
+	COMMAND ${GIT_EXECUTABLE} clone --branch ${CONTRIB_GIT_BRANCH} "${CONTRIB_GITHUB_BASE}/BALL_contrib_bzip2-1.0.6" bzip2
+	COMMAND ${GIT_EXECUTABLE} clone --branch ${CONTRIB_GIT_BRANCH} "${CONTRIB_GITHUB_BASE}/BALL_contrib_zlib-1.2.8" zlib
 
 	DEPENDERS configure
 )
@@ -115,7 +110,7 @@ IF(APPLE)
 	FIX_DYLIB_INSTALL_NAMES(libboost)
 ENDIF()
 
-MSG_CONFIGURE_PACKAGE_END("${PACKAGE_NAME}")
+
 
 
 

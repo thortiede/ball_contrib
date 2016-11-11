@@ -1,201 +1,97 @@
 # -----------------------------------------------------------------------------
-#   BALL - Biochemical ALgorithms Library
-#   A C++ framework for molecular modeling and structural bioinformatics.
-# -----------------------------------------------------------------------------
+# CONTRIB FRAMEWORK
 #
-# Copyright (C) 1996-2012, the BALL Team:
-#  - Andreas Hildebrandt
-#  - Oliver Kohlbacher
-#  - Hans-Peter Lenhof
-#  - Eberhard Karls University, Tuebingen
-#  - Saarland University, Saarbrücken
-#  - others
+# Based on CMake ExternalProjects, this repository offers functionality
+# to configure, build, and install software dependencies that can be used
+# by other projects.
 #
-#  This library is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU Lesser General Public
-#  License as published by the Free Software Foundation; either
-#  version 2.1 of the License, or (at your option) any later version.
+# It has been developed in course of the open source
+# research software BALL (Biochemical ALgorithms Library).
 #
-#  This library is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#  Lesser General Public License for more details.
 #
-#  You should have received a copy of the GNU Lesser General Public
-#  License along with this library (BALL/source/LICENSE); if not, write
-#  to the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
-#  Boston, MA  02111-1307  USA
+# Copyright 2016, the BALL team (http://www.ball-project.org)
 #
-# -----------------------------------------------------------------------------
-# $Maintainer: Philipp Thiel $
-# $Authors: Philipp Thiel $
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL ANY OF THE AUTHORS OR THE CONTRIBUTING
+# INSTITUTIONS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
 # -----------------------------------------------------------------------------
 
 
 PROJECT("BALL_contrib")
 
-SET(BALL_CONTRIB_VERSION_MAJOR "1")
-SET(BALL_CONTRIB_VERSION_MINOR "5")
-SET(BALL_CONTRIB_VERSION_PATCH "1")
-SET(BALL_CONTRIB_VERSION "${BALL_CONTRIB_VERSION_MAJOR}.${BALL_CONTRIB_VERSION_MINOR}.${BALL_CONTRIB_VERSION_PATCH}")
+SET(CONTRIB_VERSION_MAJOR "1" CACHE INTERNAL "Contrib version MAJOR")
+SET(CONTRIB_VERSION_MINOR "5" CACHE INTERNAL "Contrib version MINOR")
+SET(CONTRIB_VERSION_PATCH "1" CACHE INTERNAL "Contrib version PATCH")
+SET(CONTRIB_VERSION "${CONTRIB_VERSION_MAJOR}.${CONTRIB_VERSION_MINOR}.${CONTRIB_VERSION_PATCH}" CACHE INTERNAL "Contrib version string")
 
 
 ###############################################################################
-###    CMake settings                                                       ###
-###############################################################################
+# CMake and global settings
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0.0 FATAL_ERROR)
 
 # Path to contrib-specific CMake modules
 LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_BINARY_DIR}/cmake")
 
+# CMake variables that can be changed by the user
+SET(CONTRIB_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/install" CACHE PATH "Prefix to install BALL_contrib. Default: <BALL_contrib_build_dir>/install")
+SET(THREADS "1" CACHE STRING "Number of threads used by make steps. Default: 1")
+SET(PACKAGES "all" CACHE STRING "Contrib packages to be build. Default: all")
+SET(DOWNLOAD_TIMEOUT "420" CACHE STRING "Timout (seconds) for single package downloads (git clone). Default: 420")
+
 # ExternalProjects package
 INCLUDE(ExternalProject)
 
+# Setup BALL_contrib
+INCLUDE(ContribSetup)
+
 # Load contrib-specific macros and messages
-INCLUDE(BALLContribMacros)
+INCLUDE(ContribMacros)
 
 
 ###############################################################################
-###    Global settings                                                      ###
-###############################################################################
+# Packages contained in this contrib
 
-# Binary CMake module folder
-SET(CONTRIB_CMAKE_MODULES "${PROJECT_BINARY_DIR}/cmake")
-FILE(MAKE_DIRECTORY "${CONTRIB_CMAKE_MODULES}")
+SET(pkg_boost        "BALL_contrib_boost_1.60.0" CACHE INTERNAL "Boost repo name")
+SET(pkg_eigen3       "BALL_contrib_eigen_3.2.5" CACHE INTERNAL "Eigen3 repo name")
+SET(pkg_fftw         "BALL_contrib_fftw_3.3.4" CACHE INTERNAL "FFTW repo name")
+SET(pkg_glew         "BALL_contrib_glew_1.13.0" CACHE INTERNAL "GLEW repo name")
+SET(pkg_openbabel    "BALL_contrib_openbabel_2.4.1" CACHE INTERNAL "OpenBabel repo name")
+SET(pkg_sip          "BALL_contrib_sip_4.16.9" CACHE INTERNAL "SIP repo name")
+SET(pkg_tbb          "BALL_contrib_tbb43_20150611" CACHE INTERNAL "TBB repo name")
+SET(pkg_qt5          "BALL_contrib_qt_5.6.1-1" CACHE INTERNAL "Qt5 repo name")
 
-# Folder to store the downloaded tarballs
-SET(CONTRIB_ARCHIVES_PATH "${PROJECT_BINARY_DIR}/archives")
-FILE(MAKE_DIRECTORY "${CONTRIB_ARCHIVES_PATH}")
-
-# Install directory
-SET(CONTRIB_INSTALL_BASE "${PROJECT_BINARY_DIR}/install")
-FILE(MAKE_DIRECTORY "${CONTRIB_INSTALL_BASE}")
-
-# Install directory: binaries
-SET(CONTRIB_INSTALL_BIN "${CONTRIB_INSTALL_BASE}/bin")
-FILE(MAKE_DIRECTORY "${CONTRIB_INSTALL_BIN}")
-
-# Install directory: libraries
-SET(CONTRIB_INSTALL_LIB "${CONTRIB_INSTALL_BASE}/lib")
-FILE(MAKE_DIRECTORY "${CONTRIB_INSTALL_LIB}")
-
-# Install directory: dynamic libraries on Windows
 IF(MSVC)
-	SET(CONTRIB_INSTALL_DLL "${CONTRIB_INSTALL_BASE}/dlls")
-	FILE(MAKE_DIRECTORY "${CONTRIB_INSTALL_DLL}")
+	SET(pkg_bison        "BALL_contrib_bison_2.4.1" CACHE INTERNAL "Bison repo name")
+	SET(pkg_flex         "BALL_contrib_flex_2.5.4" CACHE INTERNAL "Flex repo name")
+	SET(pkg_oncrpc       "BALL_contrib_oncrpc_1.14" CACHE INTERNAL "Oncrpc repo name")
+
+	# Bison and Flex are mandatory on Windows
+	SET(PACKAGES_SELECTED bison flex)
 ENDIF()
-
-# Install directory: headers
-SET(CONTRIB_INSTALL_INC "${CONTRIB_INSTALL_BASE}/include")
-FILE(MAKE_DIRECTORY "${CONTRIB_INSTALL_INC}")
-
-# Path that contains extracted sources (usually <build_dir>/src)
-SET(CONTRIB_BINARY_SRC "${PROJECT_BINARY_DIR}/src")
-FILE(MAKE_DIRECTORY "${CONTRIB_BINARY_SRC}")
-
-# Path that contains the contrib libraries
-# Directory already exists (git)
-SET(CONTRIB_LIBRARY_PATH "${PROJECT_SOURCE_DIR}/libraries")
-
-# Optional path to directory that contains ball_contrib package tarballs.
-# Amongst others, this variable can be used to provide self-contained ball_contrib packages.
-SET(ARCHIVES_PATH "" CACHE PATH "Optional path to the folder containing the contrib archives.")
-
-# Set URL for archive download
-SET(ARCHIVES_URL "http://build-archive.informatik.uni-tuebingen.de/ball/contrib/v${BALL_CONTRIB_VERSION}/archives")
-SET(ARCHIVES_URL_FALLBACK "http://sourceforge.net/projects/ballproject/files/contrib/v${BALL_CONTRIB_VERSION}/archives")
-SET_CONTRIB_ARCHIVES_URL()
-
-# Logging options
-SET(CUSTOM_BUILD_IN_SOURCE 1 CACHE STRING  "Build projects in sources (default 1).")
-SET(CUSTOM_LOG_DOWNLOAD 1 CACHE STRING  "Write logfile for download step instead of printing (default 1).")
-SET(CUSTOM_LOG_UPDATE 1 CACHE STRING  "Write logfile for update/patch step instead of printing (default 1).")
-SET(CUSTOM_LOG_CONFIGURE 1 CACHE STRING  "Write logfile for configure step instead of printing (default 1).")
-SET(CUSTOM_LOG_BUILD 1 CACHE STRING  "Write logfile for build step instead of printing (default 1).")
-SET(CUSTOM_LOG_INSTALL 1 CACHE STRING  "Write logfile for install step instead of printing (default 1).")
-
-# Option to specify number of threads used by make
-SET(THREADS 1 CACHE STRING "Number of threads used by make steps (default 1).")
-
-# Set contrib build type
-IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
-	SET(CONTRIB_BUILD_TYPE "Debug")
-ELSEIF(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-	SET(CONTRIB_BUILD_TYPE "RelWithDebInfo")
-ELSE()
-	SET(CONTRIB_BUILD_TYPE "Release")
-ENDIF()
-
-# Determine whether this is a 32 or 64 bit build
-IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
-	SET(CONTRIB_ADDRESSMODEL 64)
-	SET(MSBUILD "msbuild" "/m:${THREADS}" "/p:Platform=x64"   "/p:Configuration=${CONTRIB_BUILD_TYPE}")
-ELSE()
-	SET(CONTRIB_ADDRESSMODEL 32)
-	SET(MSBUILD "msbuild" "/m:${THREADS}" "/p:Platform=win32" "/p:Configuration=${CONTRIB_BUILD_TYPE}")
-ENDIF()
-
-# Set appropriate build commands for non-windows systems
-IF(NOT MSVC)
-	SET(MAKE_COMMAND "make" "-j${THREADS}")
-	SET(MAKE_INSTALL_COMMAND "make" "install")
-ENDIF()
-
-# Check availability of Python
-INCLUDE(BALLContribPython)
 
 
 ###############################################################################
-###    Select and check packages to be installed                            ###
+# Generate list of available packages (PACKAGES_AVAILABLE)
+# and evaluate packages selected by the user via -DPACKAGES (PACKAGES_SELECTED)
+
+EVALUATE_PACKAGES()
+
+
 ###############################################################################
+# Configure and download selected packages
 
-# Get list and information of available contrib packages
-INCLUDE(BALLContribPackages)
+CONFIGURE_PACKAGES()
 
-# Print help message if HELP is set
-OPTION(HELP "Show help for ball_contrib installation." FALSE)
-IF(HELP)
-	MSG_HELP()
-	RETURN(0)
-ENDIF()
-
-# Optional variable set by the user to select the packages to be build.
-# If not set by the user, all packages are selected.
-SET(PACKAGES "" CACHE STRING "Variable to control which packages are build.")
-IF(PACKAGES STREQUAL "")
-	SET(PACKAGES "${CONTRIB_PACKAGES}")
-ENDIF()
-
-# Check if selected packages are valid.
-# Macro populates BUILD_PACKAGES variable
-SET(BUILD_PACKAGES "")
-EVALUATE_SELECTION()
-
-# Iterate valid packages, configure them, and add them to DOWNLOAD_ARCHIVES
-SET(DOWNLOAD_ARCHIVES "")
-FOREACH(PACKAGE_NAME ${BUILD_PACKAGES})
-
-	INCLUDE("${CONTRIB_LIBRARY_PATH}/${PACKAGE_NAME}.cmake" RESULT_VARIABLE SUCCESS)
-	IF(NOT ${SUCCESS} STREQUAL "NOTFOUND")
-		LIST(APPEND DOWNLOAD_ARCHIVES "${PACKAGE_NAME}")
-	ENDIF()
-
-ENDFOREACH()
-
-# Option to skip MD5 checks of downloaded archives.
-OPTION(SKIP_MD5_CHECKS "Skip download verification. For development purpose only." FALSE)
-
-# Finally, download archives
-FETCH_PACKAGE_ARCHIVES()
-
-# Configure version file
-CONFIGURE_FILE(cmake/ball_contrib_version.cmake.in "${CONTRIB_CMAKE_MODULES}/ball_contrib_version.cmake")
-
-
-
-
-
-
+LICENSE_AGREEMENT_MSG()
 

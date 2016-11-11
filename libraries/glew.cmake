@@ -1,52 +1,49 @@
 # -----------------------------------------------------------------------------
-#   BALL - Biochemical ALgorithms Library
-#   A C++ framework for molecular modeling and structural bioinformatics.
-# -----------------------------------------------------------------------------
+# CONTRIB FRAMEWORK
 #
-# Copyright (C) 1996-2012, the BALL Team:
-#  - Andreas Hildebrandt
-#  - Oliver Kohlbacher
-#  - Hans-Peter Lenhof
-#  - Eberhard Karls University, Tuebingen
-#  - Saarland University, Saarbrücken
-#  - others
+# Based on CMake ExternalProjects, this repository offers functionality
+# to configure, build, and install software dependencies that can be used
+# by other projects.
 #
-#  This library is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU Lesser General Public
-#  License as published by the Free Software Foundation; either
-#  version 2.1 of the License, or (at your option) any later version.
+# It has been developed in course of the open source
+# research software BALL (Biochemical ALgorithms Library).
 #
-#  This library is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#  Lesser General Public License for more details.
 #
-#  You should have received a copy of the GNU Lesser General Public
-#  License along with this library (BALL/source/LICENSE); if not, write
-#  to the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
-#  Boston, MA  02111-1307  USA
+# Copyright 2016, the BALL team (http://www.ball-project.org)
 #
-# -----------------------------------------------------------------------------
-# $Maintainer: Philipp Thiel $
-# $Authors: Philipp Thiel $
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL ANY OF THE AUTHORS OR THE CONTRIBUTING
+# INSTITUTIONS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
 # -----------------------------------------------------------------------------
 
-MSG_CONFIGURE_PACKAGE_BEGIN("${PACKAGE_NAME}")
 
 IF(MSVC)
 	SET(GLEW_BUILD_COMMAND "")
-	SET(GLEW_INSTALL_COMMAND "${CMAKE_COMMAND}" -P "${CONTRIB_BINARY_SRC}/glew_install.cmake")
+	SET(GLEW_INSTALL_COMMAND "")
+
+	SET(GLEW_ARCH_DIR "x64")
+	IF(${CONTRIB_ADDRESSMODEL} EQUAL 32)
+		SET(GLEW_ARCH_DIR "Win32")
+	ENDIF()
 ELSE()
-	SET(GLEW_BUILD_COMMAND env GLEW_DEST=${CONTRIB_INSTALL_BASE} ${MAKE_COMMAND} STRIP=strip)
-	SET(GLEW_INSTALL_COMMAND env GLEW_DEST=${CONTRIB_INSTALL_BASE} ${MAKE_INSTALL_COMMAND})
+	SET(GLEW_BUILD_COMMAND env GLEW_DEST=${CONTRIB_INSTALL_PREFIX} ${MAKE_COMMAND} STRIP=strip)
+	SET(GLEW_INSTALL_COMMAND env GLEW_DEST=${CONTRIB_INSTALL_PREFIX} ${MAKE_INSTALL_COMMAND})
 ENDIF()
 
-CONFIGURE_FILE("${CONTRIB_LIBRARY_PATH}/glew_install.cmake.in" "${CONTRIB_BINARY_SRC}/glew_install.cmake" @ONLY)
 
-ExternalProject_Add(${PACKAGE_NAME}
+ExternalProject_Add(${PACKAGE}
 
-	URL "${CONTRIB_ARCHIVES_PATH}/${${PACKAGE_NAME}_archive}"
 	PREFIX ${PROJECT_BINARY_DIR}
+	DOWNLOAD_COMMAND ""
 	BUILD_IN_SOURCE ${CUSTOM_BUILD_IN_SOURCE}
 
 	LOG_DOWNLOAD ${CUSTOM_LOG_DOWNLOAD}
@@ -57,7 +54,22 @@ ExternalProject_Add(${PACKAGE_NAME}
 
 	CONFIGURE_COMMAND ""
 	BUILD_COMMAND "${GLEW_BUILD_COMMAND}"
-	INSTALL_COMMAND ${GLEW_INSTALL_COMMAND}
+	INSTALL_COMMAND "${GLEW_INSTALL_COMMAND}"
 )
 
-MSG_CONFIGURE_PACKAGE_END("${PACKAGE_NAME}")
+IF(MSVC)
+	# Add custom install step for Windows
+	ExternalProject_Add_Step(${PACKAGE} custom_install
+
+		LOG 1
+		DEPENDEES build
+
+		WORKING_DIRECTORY "${CONTRIB_BINARY_SRC}"
+		COMMAND ${CMAKE_COMMAND} -E copy_directory ${PACKAGE}/include/GL ${CONTRIB_INSTALL_INC}/GL
+		COMMAND ${CMAKE_COMMAND} -E copy ${PACKAGE}/bin/Release/${GLEW_ARCH_DIR}/glew32.dll ${CONTRIB_INSTALL_LIB}
+		COMMAND ${CMAKE_COMMAND} -E copy ${PACKAGE}/lib/Release/${GLEW_ARCH_DIR}/glew32.lib ${CONTRIB_INSTALL_LIB}
+		COMMAND ${CMAKE_COMMAND} -E copy ${PACKAGE}/lib/Release/${GLEW_ARCH_DIR}/glew32s.lib ${CONTRIB_INSTALL_LIB}
+
+		DEPENDERS install
+	)
+ENDIF()

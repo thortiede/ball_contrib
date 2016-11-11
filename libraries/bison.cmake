@@ -1,45 +1,35 @@
 # -----------------------------------------------------------------------------
-#   BALL - Biochemical ALgorithms Library
-#   A C++ framework for molecular modeling and structural bioinformatics.
-# -----------------------------------------------------------------------------
+# CONTRIB FRAMEWORK
 #
-# Copyright (C) 1996-2012, the BALL Team:
-#  - Andreas Hildebrandt
-#  - Oliver Kohlbacher
-#  - Hans-Peter Lenhof
-#  - Eberhard Karls University, Tuebingen
-#  - Saarland University, Saarbrücken
-#  - others
+# Based on CMake ExternalProjects, this repository offers functionality
+# to configure, build, and install software dependencies that can be used
+# by other projects.
 #
-#  This library is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU Lesser General Public
-#  License as published by the Free Software Foundation; either
-#  version 2.1 of the License, or (at your option) any later version.
+# It has been developed in course of the open source
+# research software BALL (Biochemical ALgorithms Library).
 #
-#  This library is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-#  Lesser General Public License for more details.
 #
-#  You should have received a copy of the GNU Lesser General Public
-#  License along with this library (BALL/source/LICENSE); if not, write
-#  to the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
-#  Boston, MA  02111-1307  USA
+# Copyright 2016, the BALL team (http://www.ball-project.org)
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL ANY OF THE AUTHORS OR THE CONTRIBUTING
+# INSTITUTIONS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 # -----------------------------------------------------------------------------
-# $Maintainer: Philipp Thiel $
-# $Authors: Philipp Thiel $
-# -----------------------------------------------------------------------------
 
-MSG_CONFIGURE_PACKAGE_BEGIN("${PACKAGE_NAME}")
 
-SET(TARGET_DIR "${CONTRIB_BINARY_SRC}/${PACKAGE_NAME}")
-CONFIGURE_FILE("${CONTRIB_LIBRARY_PATH}/install_template.cmake.in" "${CONTRIB_BINARY_SRC}/bison_install.cmake" @ONLY)
+ExternalProject_Add(${PACKAGE}
 
-ExternalProject_Add(${PACKAGE_NAME}
-
-	URL "${CONTRIB_ARCHIVES_URL}/${${PACKAGE_NAME}_archive}"
 	PREFIX ${PROJECT_BINARY_DIR}
+	DOWNLOAD_COMMAND ""
 	BUILD_IN_SOURCE 1
 
 	LOG_DOWNLOAD ${CUSTOM_LOG_DOWNLOAD}
@@ -47,11 +37,17 @@ ExternalProject_Add(${PACKAGE_NAME}
 
 	CONFIGURE_COMMAND ""
 	BUILD_COMMAND ""
-	INSTALL_COMMAND ${CMAKE_COMMAND} -P "${CONTRIB_BINARY_SRC}/bison_install.cmake"
+	INSTALL_COMMAND ""
 )
 
-MSG_CONFIGURE_PACKAGE_END("${PACKAGE_NAME}")
+# Add custom install step
+ExternalProject_Add_Step(${PACKAGE} custom_install
 
+	LOG 1
+	DEPENDEES build
 
+	WORKING_DIRECTORY "${CONTRIB_BINARY_SRC}"
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${PACKAGE} ${CONTRIB_INSTALL_PREFIX}
 
-
+	DEPENDERS install
+)
