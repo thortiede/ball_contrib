@@ -46,9 +46,9 @@ MESSAGE(STATUS "Contrib build type: ${CMAKE_BUILD_TYPE}")
 
 # Set GitHub base URL
 IF(${DOWNLOAD_TYPE} STREQUAL "archive")
-	SET(CONTRIB_GITHUB_BASE "https://api.github.com/repos/BALL-contrib" CACHE INTERNAL "GitHub base URL for archive download or cloning")
+	SET(CONTRIB_GITHUB_BASE "https://api.github.com/repos/thortiede" CACHE INTERNAL "GitHub base URL for archive download or cloning")
 ELSE()
-	SET(CONTRIB_GITHUB_BASE "git://github.com/BALL-contrib" CACHE INTERNAL "GitHub base URL for archive download or cloning")
+	SET(CONTRIB_GITHUB_BASE "git://github.com/thortiede" CACHE INTERNAL "GitHub base URL for archive download or cloning")
 ENDIF()
 
 # Set system dependent git GIT branches
