@@ -81,12 +81,7 @@ IF(MSVC)
 	SET(QT_INSTALL_COMMAND nmake install)
 
 	LIST(APPEND QT_CONFIGURE_OPTIONS -opengl dynamic)
-
-	IF(MSVC_VERSION EQUAL "1800")
-		LIST(APPEND QT_CONFIGURE_OPTIONS -platform win32-msvc2013)
-	ELSEIF(MSVC_VERSION EQUAL "1900")
-		LIST(APPEND QT_CONFIGURE_OPTIONS -platform win32-msvc2015)
-	ENDIF()
+	LIST(APPEND QT_CONFIGURE_OPTIONS -platform win32-msvc${CONTRIB_MSVC_VERSION_YEAR})
 
 	# Configure for multiple process build
 	IF("${THREADS}" GREATER "1")
@@ -122,3 +117,38 @@ ExternalProject_Add(${PACKAGE}
 	BUILD_COMMAND ${QT_BUILD_COMMAND}
 	INSTALL_COMMAND ${QT_INSTALL_COMMAND}
 )
+
+
+#IF(APPLE)
+#
+#	# This step is not very nice and can most likely be removed when moving to Qt 5.7
+#	# QtTest library links to XCTest framework via rpath but no LC_RPATH is set in the dylib.
+#	# Thus, XCTest cannot be found. As a solution, we change the installed name of XCTest framework.
+#
+#	EXECUTE_PROCESS(COMMAND xcrun --show-sdk-path OUTPUT_VARIABLE XCRUN_SDK_PATH)
+#	STRING(STRIP ${XCRUN_SDK_PATH} XCRUN_SDK_PATH)
+#
+#	# Add custom Install step
+#	ExternalProject_Add_Step(${PACKAGE} qttest_add_lc_rpath
+#
+#		LOG 1
+#		DEPENDEES build
+#
+#		WORKING_DIRECTORY "${CONTRIB_BINARY_SRC}"
+#		COMMAND install_name_tool -change "@rpath/XCTest.framework/Versions/A/XCTest" "${XCRUN_SDK_PATH}/../../Library/Frameworks/XCTest.framework/Versions/A/XCTest" "${PACKAGE}/qtbase/lib/QtTest.framework/QtTest"
+#
+#		DEPENDERS install
+#	)
+#
+#ENDIF()
+
+
+
+
+
+
+
+
+
+
+
